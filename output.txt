@@ -1,0 +1,3 @@
+Block Header Placeholder - Nonce: 588173
+Coinbase Transaction Placeholder
+
