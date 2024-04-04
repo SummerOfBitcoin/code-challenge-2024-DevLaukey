@@ -2,14 +2,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 
 const DIFFICULTY_TARGET =
-  "0000ffff00000000000000000000000000000000000000000000000000000000";
-
-// Function to validate a transaction
-function validateTransaction(transaction) {
-  // Implement your transaction validation logic here
-  // Return true if valid, false otherwise
-  return true; // Placeholder, replace with actual validation logic
-}
+  "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 // Function to calculate the hash of a block
 function calculateBlockHash(blockHeader) {

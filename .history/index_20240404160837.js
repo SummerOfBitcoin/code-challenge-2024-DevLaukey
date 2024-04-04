@@ -2,7 +2,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 
 const DIFFICULTY_TARGET =
-  "0000ffff00000000000000000000000000000000000000000000000000000000";
+  "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 // Function to validate a transaction
 function validateTransaction(transaction) {
