@@ -6,9 +6,45 @@ const DIFFICULTY_TARGET =
 
 // Function to validate a transaction
 function validateTransaction(transaction) {
-  // Implement your transaction validation logic here
-  // Return true if valid, false otherwise
-  return true; // Placeholder, replace with actual validation logic
+  // Check if the transaction has required fields
+  if (
+    !transaction.version ||
+    !transaction.locktime ||
+    !transaction.vin ||
+    !transaction.vout
+  ) {
+    console.log("Invalid transaction: Missing fields");
+    return false;
+  }
+
+  // Check if the transaction version is supported
+  if (transaction.version !== 1) {
+    console.log("Invalid transaction: Unsupported version");
+    return false;
+  }
+
+  // Check if locktime is 0 (no future locktime)
+  if (transaction.locktime !== 0) {
+    console.log("Invalid transaction: Future locktime not allowed");
+    return false;
+  }
+
+  // Check if there are inputs
+  if (transaction.vin.length === 0) {
+    console.log("Invalid transaction: No inputs");
+    return false;
+  }
+
+  // Check if there are outputs
+  if (transaction.vout.length === 0) {
+    console.log("Invalid transaction: No outputs");
+    return false;
+  }
+
+  // Add more validation checks as needed...
+
+  // If all checks pass, return true
+  return true;
 }
 
 // Function to calculate the hash of a block
