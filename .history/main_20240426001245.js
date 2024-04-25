@@ -15,6 +15,7 @@ const readTransactions = () => {
     const transaction = JSON.parse(data);
       transactions.push(transaction);
       
+      console.log(transaction)
   });
 
   return transactions;

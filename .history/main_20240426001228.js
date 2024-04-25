@@ -15,6 +15,7 @@ const readTransactions = () => {
     const transaction = JSON.parse(data);
       transactions.push(transaction);
       
+      console.log(transaction)
   });
 
   return transactions;
@@ -107,8 +108,7 @@ const writeOutputFile = (blockHeader, coinbaseTx, minedTxids) => {
 
 // Main Execution
 const main = () => {
-    const transactions = readTransactions();
-    console.log(transactions,"transactions")
+  const transactions = readTransactions();
 //   const validTransactions = validateTransactions(transactions);
 //   const coinbaseTx = createCoinbaseTransaction(validTransactions);
 //   const merkleRoot = "calculateMerkleRoot(validTransactions)";
