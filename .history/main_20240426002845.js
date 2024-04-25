@@ -21,12 +21,10 @@ const readTransactions = () => {
 
 // Step 2: Validate the Transactions
 const validateTransaction = (transaction, parentTxids) => {
-  // Validate vin
+  // Validate vin and vout
   const vinValid = transaction.vin.every((input) =>
     parentTxids.has(input.txid)
   );
-
-  // Validate vout
   const voutValid = transaction.vout.every((output) => output.value > 0);
 
   return vinValid && voutValid;
@@ -37,17 +35,14 @@ const validateTransactions = (transactions) => {
   const parentTxids = new Set();
 
   transactions.forEach((transaction) => {
-    // Adding parent txids to set
-    transaction.vin.forEach((input) => parentTxids.add(input.txid));
-
     if (validateTransaction(transaction, parentTxids)) {
       validTransactions.push(transaction);
+      transaction.vin.forEach((input) => parentTxids.add(input.txid));
     }
   });
 
   return validTransactions;
 };
-
 
 // Step 3: Create the Coinbase Transaction
 const createCoinbaseTransaction = (validTransactions) => {
@@ -55,8 +50,7 @@ const createCoinbaseTransaction = (validTransactions) => {
   const totalFee = validTransactions.reduce(
     (acc, curr) =>
       acc +
-      (curr.vout.reduce((sum, output) => sum + output.value, 0) -
-        curr.vin.reduce((sum, input) => sum + input.prevout.value, 0)),
+      (curr.vout[0].value + curr.vout[1].value - curr.vin[0].prevout.value),
     0
   );
 
@@ -97,22 +91,17 @@ const mineBlock = (blockHeader, coinbaseTx, transactions) => {
   let nonce = 0;
   let blockHash = "";
 
-  console.log("Mining started...");
-
   while (!isValidHash(blockHash)) {
+    blockHeader.nonce = nonce;
     const data = JSON.stringify({
       blockHeader,
       coinbaseTx,
       transactions,
-      nonce,
     });
 
     blockHash = crypto.createHash("sha256").update(data).digest("hex");
     nonce++;
-    // Assumption: Mining process increments the nonce value to find a valid block hash
   }
-
-  console.log("Mining completed!");
 
   return { blockHash, nonce };
 };
@@ -138,7 +127,6 @@ const calculateMerkleRoot = (transactions) => {
     .createHash("sha256")
     .update(txids.join(""))
     .digest("hex");
-  // Assumption: Simplified Merkle Root calculation by hashing concatenated transaction IDs
 
   return merkleRoot;
 };
@@ -146,11 +134,7 @@ const calculateMerkleRoot = (transactions) => {
 // Main Execution
 const main = () => {
   const transactions = readTransactions();
-  console.log(`Total Transactions: ${transactions.length}`);
-  console.log("Transactions: ", transactions);
   const validTransactions = validateTransactions(transactions);
-  console.log(`Valid Transactions: ${validTransactions.length}`);
-  console.log("Valid Transactions: ", validTransactions);
   const coinbaseTx = createCoinbaseTransaction(validTransactions);
   const merkleRoot = calculateMerkleRoot(validTransactions);
   const blockHeader = constructBlockHeader(merkleRoot);

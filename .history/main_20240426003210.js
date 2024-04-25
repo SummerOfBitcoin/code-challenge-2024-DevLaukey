@@ -21,12 +21,11 @@ const readTransactions = () => {
 
 // Step 2: Validate the Transactions
 const validateTransaction = (transaction, parentTxids) => {
-  // Validate vin
+  // Validate vin and vout
   const vinValid = transaction.vin.every((input) =>
     parentTxids.has(input.txid)
   );
 
-  // Validate vout
   const voutValid = transaction.vout.every((output) => output.value > 0);
 
   return vinValid && voutValid;
@@ -37,17 +36,14 @@ const validateTransactions = (transactions) => {
   const parentTxids = new Set();
 
   transactions.forEach((transaction) => {
-    // Adding parent txids to set
-    transaction.vin.forEach((input) => parentTxids.add(input.txid));
-
     if (validateTransaction(transaction, parentTxids)) {
       validTransactions.push(transaction);
+      transaction.vin.forEach((input) => parentTxids.add(input.txid));
     }
   });
 
   return validTransactions;
 };
-
 
 // Step 3: Create the Coinbase Transaction
 const createCoinbaseTransaction = (validTransactions) => {
