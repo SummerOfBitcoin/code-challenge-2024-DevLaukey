@@ -19,51 +19,7 @@ const readTransactions = () => {
   return transactions;
 };
 
-// Step 2: Validate Block
-const validateBlock = (block) => {
-  // Validate block header
-  const isBlockHeaderValid = validateBlockHeader(block.header);
-
-  // Validate transactions
-  const areTransactionsValid = validateTransactions(block.transactions);
-
-  return isBlockHeaderValid && areTransactionsValid;
-};
-
-// Step 3: Validate Block Header
-const validateBlockHeader = (blockHeader) => {
-  // Check if version is valid
-  if (blockHeader.version < 0) {
-    return false;
-  }
-
-  // Check if timestamp is not too far in the future
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  if (blockHeader.timestamp > currentTimestamp + MAX_FUTURE_TIMESTAMP) {
-    return false;
-  }
-
-  // Check if the hash of the block header meets the target difficulty
-  if (!isValidHash(blockHeader.hash)) {
-    return false;
-  }
-
-  // Additional checks can be added as needed
-
-  return true; // For simplicity, assuming all block headers are valid
-};
-
-// Step 4: Validate Transactions
-const validateTransactions = (transactions) => {
-  // Validate each transaction
-  const areAllTransactionsValid = transactions.every((transaction) => {
-    return validateTransaction(transaction);
-  });
-
-  return areAllTransactionsValid;
-};
-
-// Step 5: Validate Transaction
+// Step 2: Validate Transaction
 const validateTransaction = (transaction) => {
   // Validate inputs
   const inputsValid = transaction.vin.every((input) => {
@@ -93,51 +49,16 @@ const validateTransaction = (transaction) => {
   return inputsValid && outputsValid;
 };
 
-// Step 6: Helper Function - Check if Hash is Valid
-const isValidHash = (hash) => {
-  const target =
-    "0000ffff00000000000000000000000000000000000000000000000000000000";
-  return hash < target;
+// Step 3: Validate Transactions
+const validateTransactions = (transactions) => {
+  const validTransactions = transactions.filter((transaction) => {
+    return validateTransaction(transaction);
+  });
+
+  return validTransactions;
 };
 
-// Constants
-const MAX_FUTURE_TIMESTAMP = 7200; // Maximum allowed future timestamp difference (in seconds)
-
-// Uncommented functions
-
-const createCoinbaseTransaction = (validTransactions) => {
-  // Calculate total fee
-  const totalFee = validTransactions.reduce(
-    (acc, curr) =>
-      acc +
-      (curr.vout.reduce((sum, output) => sum + output.value, 0) -
-        curr.vin.reduce((sum, input) => sum + input.prevout.value, 0)),
-    0
-  );
-
-  // Create coinbase transaction
-  const coinbaseTx = {
-    txid: "coinbaseTxId",
-    fee: totalFee,
-    // Assumption: For simplicity, using a hardcoded 'coinbaseTxId' as the coinbase transaction ID
-  };
-
-  return coinbaseTx;
-};
-
-// Step 7: Calculate Merkle Root
-const calculateMerkleRoot = (transactions) => {
-  const txids = transactions.map((tx) => tx.txid);
-  let merkleRoot = crypto
-    .createHash("sha256")
-    .update(txids.join(""))
-    .digest("hex");
-  // Assumption: Simplified Merkle Root calculation by hashing concatenated transaction IDs
-
-  return merkleRoot;
-};
-
-// Step 8: Construct the Block Header
+// Step 4: Construct the Block Header
 const constructBlockHeader = (merkleRoot) => {
   const version = 1;
   const prevBlockHash =
@@ -159,7 +80,7 @@ const constructBlockHeader = (merkleRoot) => {
   return blockHeader;
 };
 
-// Step 9: Mine the Block
+// Step 5: Mine the Block
 const mineBlock = (blockHeader, coinbaseTx, transactions) => {
   let nonce = 0;
   let blockHash = "";
@@ -184,12 +105,30 @@ const mineBlock = (blockHeader, coinbaseTx, transactions) => {
   return { blockHash, nonce };
 };
 
-// Step 10: Generate the Output File
+const isValidHash = (hash) => {
+  const target =
+    "0000ffff00000000000000000000000000000000000000000000000000000000";
+  return hash < target;
+};
+
+// Step 6: Generate the Output File
 const writeOutputFile = (blockHeader, coinbaseTx, minedTxids) => {
   const outputFileContent = `${JSON.stringify(blockHeader)}\n${JSON.stringify(
     coinbaseTx
   )}\n${minedTxids.join("\n")}`;
   fs.writeFileSync("output.txt", outputFileContent);
+};
+
+// Step 7: Calculate Merkle Root
+const calculateMerkleRoot = (transactions) => {
+  const txids = transactions.map((tx) => tx.txid);
+  let merkleRoot = crypto
+    .createHash("sha256")
+    .update(txids.join(""))
+    .digest("hex");
+  // Assumption: Simplified Merkle Root calculation by hashing concatenated transaction IDs
+
+  return merkleRoot;
 };
 
 // Main Execution
@@ -199,12 +138,11 @@ const main = () => {
 
   console.log(`Valid Transactions: ${validTransactions.length}`);
 
-  const coinbaseTx = createCoinbaseTransaction(validTransactions);
   const merkleRoot = calculateMerkleRoot(validTransactions);
   const blockHeader = constructBlockHeader(merkleRoot);
   const { blockHash, nonce } = mineBlock(
     blockHeader,
-    coinbaseTx,
+    "coinbaseTx", // Placeholder for coinbase transaction
     validTransactions
   );
 
@@ -213,7 +151,7 @@ const main = () => {
 
   writeOutputFile(
     blockHeader,
-    coinbaseTx,
+    "coinbaseTx", // Placeholder for coinbase transaction
     validTransactions.map((tx) => tx.txid)
   );
 };

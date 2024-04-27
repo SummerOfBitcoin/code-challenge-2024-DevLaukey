@@ -199,23 +199,23 @@ const main = () => {
 
   console.log(`Valid Transactions: ${validTransactions.length}`);
 
-  const coinbaseTx = createCoinbaseTransaction(validTransactions);
-  const merkleRoot = calculateMerkleRoot(validTransactions);
-  const blockHeader = constructBlockHeader(merkleRoot);
-  const { blockHash, nonce } = mineBlock(
-    blockHeader,
-    coinbaseTx,
-    validTransactions
-  );
+  // const coinbaseTx = createCoinbaseTransaction(validTransactions);
+  // const merkleRoot = calculateMerkleRoot(validTransactions);
+  // const blockHeader = constructBlockHeader(merkleRoot);
+  // const { blockHash, nonce } = mineBlock(
+  //   blockHeader,
+  //   coinbaseTx,
+  //   validTransactions
+  // );
 
-  console.log(`Block Hash: ${blockHash}`);
-  console.log(`Nonce: ${nonce}`);
+  // console.log(`Block Hash: ${blockHash}`);
+  // console.log(`Nonce: ${nonce}`);
 
-  writeOutputFile(
-    blockHeader,
-    coinbaseTx,
-    validTransactions.map((tx) => tx.txid)
-  );
+  // writeOutputFile(
+  //   blockHeader,
+  //   coinbaseTx,
+  //   validTransactions.map((tx) => tx.txid)
+  // );
 };
 
 // Execute main function

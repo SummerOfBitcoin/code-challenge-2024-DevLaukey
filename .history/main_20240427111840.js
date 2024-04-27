@@ -18,7 +18,6 @@ const readTransactions = () => {
 
   return transactions;
 };
-
 // Step 2: Validate Block
 const validateBlock = (block) => {
   // Validate block header
@@ -100,11 +99,6 @@ const isValidHash = (hash) => {
   return hash < target;
 };
 
-// Constants
-const MAX_FUTURE_TIMESTAMP = 7200; // Maximum allowed future timestamp difference (in seconds)
-
-// Uncommented functions
-
 const createCoinbaseTransaction = (validTransactions) => {
   // Calculate total fee
   const totalFee = validTransactions.reduce(
@@ -125,72 +119,8 @@ const createCoinbaseTransaction = (validTransactions) => {
   return coinbaseTx;
 };
 
-// Step 7: Calculate Merkle Root
-const calculateMerkleRoot = (transactions) => {
-  const txids = transactions.map((tx) => tx.txid);
-  let merkleRoot = crypto
-    .createHash("sha256")
-    .update(txids.join(""))
-    .digest("hex");
-  // Assumption: Simplified Merkle Root calculation by hashing concatenated transaction IDs
-
-  return merkleRoot;
-};
-
-// Step 8: Construct the Block Header
-const constructBlockHeader = (merkleRoot) => {
-  const version = 1;
-  const prevBlockHash =
-    "0000000000000000000000000000000000000000000000000000000000000000";
-  const timestamp = Math.floor(Date.now() / 1000);
-  const bits = "0000ffff";
-  let nonce = 0;
-
-  const blockHeader = {
-    version,
-    prevBlockHash,
-    merkleRoot,
-    timestamp,
-    bits,
-    nonce,
-    // Assumption: nonce starts from 0 and will be incremented during mining
-  };
-
-  return blockHeader;
-};
-
-// Step 9: Mine the Block
-const mineBlock = (blockHeader, coinbaseTx, transactions) => {
-  let nonce = 0;
-  let blockHash = "";
-
-  console.log("Mining started...");
-
-  while (!isValidHash(blockHash)) {
-    const data = JSON.stringify({
-      blockHeader,
-      coinbaseTx,
-      transactions,
-      nonce,
-    });
-
-    blockHash = crypto.createHash("sha256").update(data).digest("hex");
-    nonce++;
-    // Assumption: Mining process increments the nonce value to find a valid block hash
-  }
-
-  console.log("Mining completed!");
-
-  return { blockHash, nonce };
-};
-
-// Step 10: Generate the Output File
-const writeOutputFile = (blockHeader, coinbaseTx, minedTxids) => {
-  const outputFileContent = `${JSON.stringify(blockHeader)}\n${JSON.stringify(
-    coinbaseTx
-  )}\n${minedTxids.join("\n")}`;
-  fs.writeFileSync("output.txt", outputFileContent);
-};
+// Constants
+const MAX_FUTURE_TIMESTAMP = 7200; // Maximum allowed future timestamp difference (in seconds)
 
 // Main Execution
 const main = () => {
