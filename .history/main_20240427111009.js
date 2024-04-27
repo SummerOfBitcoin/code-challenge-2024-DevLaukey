@@ -99,27 +99,6 @@ const isValidHash = (hash) => {
   return hash < target;
 };
 
-// Step 3: Create the Coinbase Transaction
-const createCoinbaseTransaction = (validTransactions) => {
-  // Calculate total fee
-  const totalFee = validTransactions.reduce(
-    (acc, curr) =>
-      acc +
-      (curr.vout.reduce((sum, output) => sum + output.value, 0) -
-        curr.vin.reduce((sum, input) => sum + input.prevout.value, 0)),
-    0
-  );
-
-  // Create coinbase transaction
-  const coinbaseTx = {
-    txid: "coinbaseTxId",
-    fee: totalFee,
-    // Assumption: For simplicity, using a hardcoded 'coinbaseTxId' as the coinbase transaction ID
-  };
-
-  return coinbaseTx;
-};
-
 // Constants
 const MAX_FUTURE_TIMESTAMP = 7200; // Maximum allowed future timestamp difference (in seconds)
 

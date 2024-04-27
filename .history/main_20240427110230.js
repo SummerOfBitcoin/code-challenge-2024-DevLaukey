@@ -18,56 +18,16 @@ const readTransactions = () => {
 
   return transactions;
 };
-// Step 2: Validate Block
-const validateBlock = (block) => {
-  // Validate block header
-  const isBlockHeaderValid = validateBlockHeader(block.header);
 
-  // Validate transactions
-  const areTransactionsValid = validateTransactions(block.transactions);
-
-  return isBlockHeaderValid && areTransactionsValid;
-};
-
-// Step 3: Validate Block Header
-const validateBlockHeader = (blockHeader) => {
-  // Check if version is valid
-  if (blockHeader.version < 0) {
-    return false;
-  }
-
-  // Check if timestamp is not too far in the future
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  if (blockHeader.timestamp > currentTimestamp + MAX_FUTURE_TIMESTAMP) {
-    return false;
-  }
-
-  // Check if the hash of the block header meets the target difficulty
-  if (!isValidHash(blockHeader.hash)) {
-    return false;
-  }
-
-  // Additional checks can be added as needed
-
-  return true; // For simplicity, assuming all block headers are valid
-};
-
-// Step 4: Validate Transactions
-const validateTransactions = (transactions) => {
-  // Validate each transaction
-  const areAllTransactionsValid = transactions.every((transaction) => {
-    return validateTransaction(transaction);
-  });
-
-  return areAllTransactionsValid;
-};
-
-// Step 5: Validate Transaction
+// Step 2: Validate Transaction
 const validateTransaction = (transaction) => {
+
+  console.log(transaction,"transaction");
   // Validate inputs
   const inputsValid = transaction.vin.every((input) => {
     // Check if the input is a coinbase transaction
     if (input.is_coinbase) {
+      console.log("coinbase transaction",txid);
       return true; // Coinbase transaction is always considered valid
     }
 
@@ -77,8 +37,6 @@ const validateTransaction = (transaction) => {
       return false; // Invalid previous output
     }
 
-    // Additional checks for script verification can be added here
-
     return true;
   });
 
@@ -87,17 +45,19 @@ const validateTransaction = (transaction) => {
     return output.value >= 0; // Output value must be non-negative
   });
 
-  // Additional checks related to consensus rules can be added here
-
   return inputsValid && outputsValid;
 };
 
-// Step 6: Helper Function - Check if Hash is Valid
-const isValidHash = (hash) => {
-  const target =
-    "0000ffff00000000000000000000000000000000000000000000000000000000";
-  return hash < target;
+// Step 3: Validate Transactions
+const validateTransactions = (transactions) => {
+  const validTransactions = transactions.filter((transaction) => {
+    return validateTransaction(transaction);
+  });
+
+  return validTransactions;
 };
+
+
 
 // Step 3: Create the Coinbase Transaction
 const createCoinbaseTransaction = (validTransactions) => {
@@ -120,15 +80,85 @@ const createCoinbaseTransaction = (validTransactions) => {
   return coinbaseTx;
 };
 
-// Constants
-const MAX_FUTURE_TIMESTAMP = 7200; // Maximum allowed future timestamp difference (in seconds)
+// Step 4: Construct the Block Header
+const constructBlockHeader = (merkleRoot) => {
+  const version = 1;
+  const prevBlockHash =
+    "0000000000000000000000000000000000000000000000000000000000000000";
+  const timestamp = Math.floor(Date.now() / 1000);
+  const bits = "0000ffff";
+  let nonce = 0;
+
+  const blockHeader = {
+    version,
+    prevBlockHash,
+    merkleRoot,
+    timestamp,
+    bits,
+    nonce,
+    // Assumption: nonce starts from 0 and will be incremented during mining
+  };
+
+  return blockHeader;
+};
+
+// Step 5: Mine the Block
+const mineBlock = (blockHeader, coinbaseTx, transactions) => {
+  let nonce = 0;
+  let blockHash = "";
+
+  console.log("Mining started...");
+
+  while (!isValidHash(blockHash)) {
+    const data = JSON.stringify({
+      blockHeader,
+      coinbaseTx,
+      transactions,
+      nonce,
+    });
+
+    blockHash = crypto.createHash("sha256").update(data).digest("hex");
+    nonce++;
+    // Assumption: Mining process increments the nonce value to find a valid block hash
+  }
+
+  console.log("Mining completed!");
+
+  return { blockHash, nonce };
+};
+
+const isValidHash = (hash) => {
+  const target =
+    "0000ffff00000000000000000000000000000000000000000000000000000000";
+  return hash < target;
+};
+
+// Step 6: Generate the Output File
+const writeOutputFile = (blockHeader, coinbaseTx, minedTxids) => {
+  const outputFileContent = `${JSON.stringify(blockHeader)}\n${JSON.stringify(
+    coinbaseTx
+  )}\n${minedTxids.join("\n")}`;
+  fs.writeFileSync("output.txt", outputFileContent);
+};
+
+// Step 7: Calculate Merkle Root
+const calculateMerkleRoot = (transactions) => {
+  const txids = transactions.map((tx) => tx.txid);
+  let merkleRoot = crypto
+    .createHash("sha256")
+    .update(txids.join(""))
+    .digest("hex");
+  // Assumption: Simplified Merkle Root calculation by hashing concatenated transaction IDs
+
+  return merkleRoot;
+};
 
 // Main Execution
 const main = () => {
   const transactions = readTransactions();
   const validTransactions = validateTransactions(transactions);
 
-  console.log(`Valid Transactions: ${validTransactions.length}`);
+  // console.log(`Valid Transactions: ${validTransactions.length}`);
 
   const coinbaseTx = createCoinbaseTransaction(validTransactions);
   const merkleRoot = calculateMerkleRoot(validTransactions);
