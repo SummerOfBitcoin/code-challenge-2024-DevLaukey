@@ -7,25 +7,24 @@ const { txns, coinbase_tx } = require("./coinbasetxn.js");
 function mine(block_header) {
   let nonce = 0;
   const target = Buffer.from(
-    "0000ffff00000000000000000000000000000000000000000000000000000000",
-    "hex"
+    "0000ffff00000000000000000000000000000000000000000000000000000000"
   ); // Convert target to buffer
   let paddedNonce = nonce.toString(16).padStart(8, "0"); // Pad nonce with leading zeros to make it 4 bytes
 
   while (true) {
-    const headerHash = Buffer.from(
-      doubleHash(block_header + littleEndian(paddedNonce)),
+    const hash = Buffer.from(
+      littleEndian(doubleHash(block_header + littleEndian(paddedNonce))),
       "hex"
-    ).reverse(); // Convert hash to buffer and reverse the order of bytes
-
-    if (headerHash.compare(target) <= 0) {
+    ); // Convert hash to buffer
+    if (hash.compare(target) < 0) {
       // Compare hashes using buffer compare method
       return block_header + littleEndian(paddedNonce);
     }
     nonce++;
-    paddedNonce = nonce.toString(16).padStart(8, "0");
+    paddedNonce = nonce.toString(16).padStart(8, "0"); /
   }
 }
+
 let mined_block = mine(block_header);
 // console.log(mined_block);
 
