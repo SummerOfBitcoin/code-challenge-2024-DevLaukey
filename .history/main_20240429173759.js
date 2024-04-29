@@ -1,3 +1,4 @@
+
 const { block_header } = require("./block.js");
 const { doubleHash } = require("./hashes.js");
 const { littleEndian } = require("./functions.js");
